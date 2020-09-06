@@ -2,8 +2,6 @@ import fs from "fs";
 
 const rawCsv = fs.readFileSync("data/raw.csv", "utf8");
 
-const selections = rawCsv.split("\n\n\n\n\n").filter((item) => item);
-
 const initialReplacer = (match: string) => ` ${match[1]},`;
 
 const matchDataString = (
@@ -18,17 +16,19 @@ const matchDataString = (
 const titleRow =
   "First Name,Surname,Date of Session (in dd/mm/yyyy format),Time of Session (From - To in hh:mm as 24 hour format),Location of Session";
 
+const selections = rawCsv.split("\n\n\n\n\n\n").filter((item) => item);
+
 const allSelections = selections.map((selection) => {
   const selectionSplit = selection.split(
     "Name,Mobile phone,Squad number,Position,Response"
   );
-  const matchData = selectionSplit[0];
+  const [matchData, playerData] = selectionSplit;
   const date = matchData.match(/(\d\d[/]\d\d[/]\d\d\d\d)/);
   const time = matchData.match(/(\d\d:\d\d)/);
   const venue = matchData.match(/(?<=Venue,)(.*)(?=\n)/);
   const matchString = matchDataString(date, time, venue);
 
-  const presentPlayers = selectionSplit[1].split("\n").filter((playerRow) => {
+  const presentPlayers = playerData.split("\n").filter((playerRow) => {
     if (playerRow.includes("Declined")) return false;
     return playerRow;
   });

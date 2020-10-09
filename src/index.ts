@@ -1,17 +1,30 @@
 import fs from "fs";
+import { add, parseJSON } from "date-fns";
 
 const rawCsv = fs.readFileSync("data/raw.csv", "utf8");
 
 const initialReplacer = (match: string) => ` ${match[1]},`;
 
+const matchEndTime = (startTime: string) => {
+  const endTime = add(parseJSON(`2000-03-15T${startTime}:00Z`), {
+    hours: 1,
+    minutes: 30,
+  });
+
+  const hour = endTime.getHours();
+  const minute = endTime.getMinutes();
+  return `${hour < 10 ? `0${hour}` : hour}:${minute === 0 ? `00` : minute}`;
+};
+
 const matchDataString = (
   date: RegExpMatchArray | null,
   time: RegExpMatchArray | null,
   venue: RegExpMatchArray | null
-) =>
-  `,${date ? date[0] : "DATE"},${time ? time[0] : "TIME"}-XX:XX,${
-    venue ? venue[0] : "VENUE"
-  }`;
+) => {
+  return `,${date ? date[0] : "DATE"},${time ? time[0] : "START"}-${
+    time ? matchEndTime(time[0]) : "END"
+  },${venue ? venue[0] : "VENUE"}`;
+};
 
 const titleRow =
   "First Name,Surname,Date of Session (in dd/mm/yyyy format),Time of Session (From - To in hh:mm as 24 hour format),Location of Session";
